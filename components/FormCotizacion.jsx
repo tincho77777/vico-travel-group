@@ -9,6 +9,7 @@ const initial = {
   fechaIda: "",
   fechaVuelta: "",
   presupuesto: "",
+  moneda: "USD",
   personas: ""
 };
 
@@ -24,8 +25,20 @@ export default function FormCotizacion() {
 
   const today = new Date().toISOString().split("T")[0];
 
-  const onChange = (e) =>
-    setData((d) => ({ ...d, [e.target.name]: e.target.value }));
+  const formatNumber = (value) => {
+    const onlyNums = value.replace(/\D/g, "");
+    if (!onlyNums) return "";
+    return new Intl.NumberFormat("es-AR").format(Number(onlyNums));
+  };
+
+  const onChange = (e) => {
+    const { name, value } = e.target;
+    if (name === "presupuesto") {
+      setData((d) => ({ ...d, presupuesto: formatNumber(value) }));
+      return;
+    }
+    setData((d) => ({ ...d, [name]: value }));
+  };
 
   const onSubmit = (e) => {
     e.preventDefault();
@@ -38,7 +51,7 @@ export default function FormCotizacion() {
       `• Nombre: ${data.nombre}\n` +
       `• Destino: ${data.destino}\n` +
       `• Fechas: ${fechas}\n` +
-      `• Presupuesto estimado: ${data.presupuesto}\n` +
+      `• Presupuesto estimado: ${data.presupuesto} ${data.moneda}\n` +
       `• Cantidad de personas: ${data.personas}`;
     window.open(buildWhatsappLink(msg), "_blank", "noopener,noreferrer");
     setSent(true);
@@ -128,15 +141,32 @@ export default function FormCotizacion() {
             </div>
             <div>
               <label className="label" htmlFor="presupuesto">Presupuesto estimado</label>
-              <input
-                id="presupuesto"
-                name="presupuesto"
-                value={data.presupuesto}
-                onChange={onChange}
-                required
-                placeholder="USD / ARS"
-                className="input"
-              />
+              <div className="flex gap-2">
+                <input
+                  id="presupuesto"
+                  name="presupuesto"
+                  type="text"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
+                  value={data.presupuesto}
+                  onChange={onChange}
+                  required
+                  placeholder="Ej: 1500"
+                  className="input flex-1"
+                />
+                <select
+                  id="moneda"
+                  name="moneda"
+                  value={data.moneda}
+                  onChange={onChange}
+                  className="input w-28"
+                  aria-label="Moneda"
+                >
+                  <option value="USD">USD</option>
+                  <option value="ARS">ARS</option>
+                  <option value="EUR">EUR</option>
+                </select>
+              </div>
             </div>
             <div>
               <label className="label" htmlFor="personas">Cantidad de personas</label>
